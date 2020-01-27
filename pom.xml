@@ -45,14 +45,6 @@
 			<artifactId>assertj-core</artifactId>
 			<version>2.6.0</version>
 		</dependency>
-
-
-		<dependency>
-			<groupId>org.camunda.bpm.assert</groupId>
-			<artifactId>camunda-bpm-assert</artifactId>
-			<version>3.0.0</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.camunda.spin</groupId>
 			<artifactId>camunda-spin-dataformat-json-jackson</artifactId>
