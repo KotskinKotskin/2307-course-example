@@ -1,44 +1,114 @@
 package bpmn.payment
 
-import junit.framework.Assert.assertEquals
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
-import org.camunda.bpm.engine.test.ProcessEngineRule
-import org.junit.Rule
-import org.springframework.dao.support.DataAccessUtils.singleResult
-import org.camunda.bpm.engine.TaskService
-import org.camunda.bpm.engine.RuntimeService
-import org.camunda.bpm.engine.test.Deployment
+import bpmn.payment.component.CamundaService
+import bpmn.payment.component.EmailSender
+import bpmn.payment.delegate.AddToSegmentDelegate
+import bpmn.payment.delegate.SendEmailDelegate
+import bpmn.payment.service.CallbackService
+import com.nhaarman.mockitokotlin2.mock
+import org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration
+import org.camunda.bpm.engine.runtime.Execution
 import org.camunda.bpm.engine.runtime.ProcessInstance
+import org.camunda.bpm.engine.test.Deployment
+import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareAssertions.assertThat
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.TestPropertySource
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.withVariables
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.historyService
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.runtimeService
+import org.camunda.bpm.engine.test.mock.Mocks
+import org.camunda.bpm.engine.variable.Variables
+import org.junit.After
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.junit.MockitoJUnitRunner
 
 
-@RunWith(SpringRunner::class)
-@SpringBootTest
-
+@RunWith(MockitoJUnitRunner::class)
 class ProductionProcessTest {
 
-	@Autowired
-	internal var runtimeService: RuntimeService? = null
+	@get:Rule
+	var processEngineRule = ProcessEngineRule(ProcessTestConfig.processEngine)
+
+	private val  emailSender: EmailSender = mock()
+	private val camundaService = CamundaService(historyService(), runtimeService())
+	private val callbackService = CallbackService(camundaService)
+
+	val PRODUCTION_PROCESS_KEY = "CourseOrigination"
+	val BUSINESS_KEY = "kotskin@bk.ru0704null"
+
+	@Before
+
+	fun setup() {
+		Mocks.register("sendEmailDelegate", SendEmailDelegate(emailSender) )
+		Mocks.register("addToSegmentDelegate", AddToSegmentDelegate(emailSender))
+	}
+
+	@After
+	fun teardown() {
+		Mocks.reset()
+	}
 
 	@Test
-	fun startProductionProcess() {
-		val pi = runtimeService!!.startProcessInstanceByKey(PRODUCTION_PROCESS_KEY)
+	@Deployment(resources = ["BPMN/Origination.bpmn"])
+	fun TechErrorPath() {
+	    //Given
+		val pi = startProcess()
+		assertThat(pi).isWaitingAt("Task_0w7obdg")
+		//When
+		execute(job())
+        //Then
+		assertThat(pi).isWaitingAt("ServiceTask_1sz8j3l")
+		execute(job())
+		assertThat(pi).isEnded
+
+	}
+
+	@Test
+	@Deployment(resources = ["BPMN/Origination.bpmn"])
+	fun PromoCodePath() {
+		//given
+		val pi = startProcess()
+		assertThat(pi).isWaitingAt("Task_0w7obdg")
+		//When
+		callbackService.markCheckedProcessByBusinessKey(BUSINESS_KEY)
+		//Then
+		assertThat(pi).isWaitingAt("Task_0relnh9")
+		execute(job())
+		execute(job())
+		assertThat(pi).isEnded
+
+	}
+
+
+
+	private fun startProcess(): ProcessInstance {
+		val pi = processEngineRule
+			.runtimeService
+			.startProcessInstanceByKey(PRODUCTION_PROCESS_KEY, BUSINESS_KEY,
+				withVariables(
+					"email", "kotskin@bk.ru",
+					"courseCode", "0704",
+					"promoCode", "somePromo",
+					"price", 9999.00
+				))
 		assertThat(pi).isNotNull()
 		assertThat(pi).isStarted
-		assertThat(pi).isWaitingAt("Task_0w7obdg")
-		execute(job());
-		assertThat(pi).isWaitingAt("ServiceTask_1sz8j3l")
+		return  pi
 	}
-	companion object {
 
-		private val PRODUCTION_PROCESS_KEY = "CourseOrigination"
-	}
+
 
 }
+
+class ProcessTestConfig {
+	companion object {
+		val processEngine = StandaloneInMemProcessEngineConfiguration
+			.createStandaloneInMemProcessEngineConfiguration()
+			.buildProcessEngine()
+	}
+}
+
