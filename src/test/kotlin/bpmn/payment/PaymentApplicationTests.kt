@@ -83,6 +83,25 @@ class ProductionProcessTest {
 
 	}
 
+	@Test
+	@Deployment(resources = ["BPMN/Origination.bpmn"])
+	fun ActivatePath() {
+		//given
+		val pi = startProcess()
+		assertThat(pi).isWaitingAt("Task_0w7obdg")
+		//When
+		callbackService.markCheckedProcessByBusinessKey(BUSINESS_KEY)
+		assertThat(pi).isWaitingAt("Task_0relnh9")
+		execute(job())
+		callbackService.markPayedProcessByBusinessKey(BUSINESS_KEY)
+		//Then
+		assertThat(pi).isWaitingAt("Task_14fmn7v")
+		execute(job())
+		assertThat(pi).isEnded
+
+	}
+
+
 
 
 	private fun startProcess(): ProcessInstance {
