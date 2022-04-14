@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_08dmdz5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.7.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.14.0">
+  <bpmn:process id="Process_1ifl815" name="Вывод данных" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0ie1928</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0ie1928" sourceRef="StartEvent_1" targetRef="Activity_0n5zm8r" />
+    <bpmn:userTask id="Activity_0n5zm8r" name="Ввести количество повторов">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="FormField_30dsqd6" label="Количество повторов" type="long" defaultValue="3" />
+        </camunda:formData>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="Output_1elbbb6">${FormField_30dsqd6}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ie1928</bpmn:incoming>
+      <bpmn:outgoing>Flow_18kj86n</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_18kj86n" sourceRef="Activity_0n5zm8r" targetRef="Gateway_0cj682y" />
+    <bpmn:inclusiveGateway id="Gateway_0cj682y">
+      <bpmn:incoming>Flow_18kj86n</bpmn:incoming>
+      <bpmn:incoming>Flow_01hictn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ykqv7x</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0ykqv7x" sourceRef="Gateway_0cj682y" targetRef="Activity_1ocs7nb" />
+    <bpmn:serviceTask id="Activity_1ocs7nb" name="Увеличить на 1" camunda:expression="true">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="Output_2i886l5">${FormField_30dsqd6+1}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ykqv7x</bpmn:incoming>
+      <bpmn:outgoing>Flow_1n6j31y</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0hrub95">
+      <bpmn:incoming>Flow_1n6j31y</bpmn:incoming>
+      <bpmn:outgoing>Flow_0r1mygj</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1ke7uru</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1n6j31y" sourceRef="Activity_1ocs7nb" targetRef="Gateway_0hrub95" />
+    <bpmn:sequenceFlow id="Flow_0r1mygj" name="x&#60;25" sourceRef="Gateway_0hrub95" targetRef="Activity_0kis47f">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${Output_2i886l5&gt;=25}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1ke7uru" name="x&#62;=25" sourceRef="Gateway_0hrub95" targetRef="Activity_1c28cjg">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${Output_2i886l5&gt;=25}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_1c28cjg" name="Вывод данных">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="FormField_33mvc7t" label="Вывод данных. Количество повторов:" type="long" defaultValue="${Output_2i886l5}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ke7uru</bpmn:incoming>
+      <bpmn:outgoing>Flow_0iqwb5g</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0kis47f" name="Вывод данных2">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="FormField_1hfl0i9" label="Вывод данных. Количество повторов:" type="long" defaultValue="${Output_2i886l5}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0r1mygj</bpmn:incoming>
+      <bpmn:outgoing>Flow_01hictn</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_01hictn" sourceRef="Activity_0kis47f" targetRef="Gateway_0cj682y" />
+    <bpmn:endEvent id="Event_0u0qh38">
+      <bpmn:incoming>Flow_0iqwb5g</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0iqwb5g" sourceRef="Activity_1c28cjg" targetRef="Event_0u0qh38" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1ifl815">
+      <bpmndi:BPMNEdge id="Flow_0ie1928_di" bpmnElement="Flow_0ie1928">
+        <di:waypoint x="215" y="267" />
+        <di:waypoint x="270" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18kj86n_di" bpmnElement="Flow_18kj86n">
+        <di:waypoint x="370" y="267" />
+        <di:waypoint x="425" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ykqv7x_di" bpmnElement="Flow_0ykqv7x">
+        <di:waypoint x="475" y="267" />
+        <di:waypoint x="530" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1n6j31y_di" bpmnElement="Flow_1n6j31y">
+        <di:waypoint x="630" y="267" />
+        <di:waypoint x="725" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ke7uru_di" bpmnElement="Flow_1ke7uru">
+        <di:waypoint x="775" y="267" />
+        <di:waypoint x="870" y="267" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="808" y="249" width="30" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0r1mygj_di" bpmnElement="Flow_0r1mygj">
+        <di:waypoint x="750" y="242" />
+        <di:waypoint x="750" y="160" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="756" y="178" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01hictn_di" bpmnElement="Flow_01hictn">
+        <di:waypoint x="700" y="120" />
+        <di:waypoint x="450" y="120" />
+        <di:waypoint x="450" y="242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iqwb5g_di" bpmnElement="Flow_0iqwb5g">
+        <di:waypoint x="970" y="267" />
+        <di:waypoint x="1072" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="249" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0izga9e_di" bpmnElement="Activity_0n5zm8r">
+        <dc:Bounds x="270" y="227" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ha07jp_di" bpmnElement="Gateway_0cj682y">
+        <dc:Bounds x="425" y="242" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10tb550_di" bpmnElement="Activity_1ocs7nb">
+        <dc:Bounds x="530" y="227" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hrub95_di" bpmnElement="Gateway_0hrub95" isMarkerVisible="true">
+        <dc:Bounds x="725" y="242" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_04gy35f_di" bpmnElement="Activity_1c28cjg">
+        <dc:Bounds x="870" y="227" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1pkg6mv_di" bpmnElement="Activity_0kis47f">
+        <dc:Bounds x="700" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0u0qh38_di" bpmnElement="Event_0u0qh38">
+        <dc:Bounds x="1072" y="249" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
