@@ -1,17 +1,22 @@
 package bpmn.payment.delegate
 
-import bpmn.payment.component.EmailSender
+
+
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component("sendEmailDelegate")
-class SendEmailDelegate(val emailSender: EmailSender): JavaDelegate {
+class SendEmailDelegate(): JavaDelegate {
     override fun execute(execution: DelegateExecution) {
-        val email = execution.getVariable("email") as String
-        val emailId = Integer.parseInt(execution.getVariable("emailId") as String)
 
-        emailSender.sendEmail(email,emailId)
+        var application = execution.getVariable("application")
+
+
+        execution.setVariable("application", application)
+
+      ///
 
 
     }
