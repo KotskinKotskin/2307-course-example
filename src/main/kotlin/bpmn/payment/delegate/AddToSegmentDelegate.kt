@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component
 @Component("setArray")
 class AddToSegmentDelegate() : JavaDelegate {
 
+
+
     private val statusHolder = ThreadLocal<String>()
 
     override fun execute(execution: DelegateExecution) {
